@@ -1,0 +1,15 @@
+.chat-icon {
+	background: #7eb3ec;
+	padding: 10px 15px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 5px;
+	width: 90%;
+	cursor: auto;
+}
+
+.chat-icon:hover {
+	background: #253e823a;
+	width: 90%;
+}

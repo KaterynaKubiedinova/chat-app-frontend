@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
@@ -12,13 +12,15 @@ import { createNewChat } from '../../store/chats';
 import { CreateNewChatBtn } from '../../themes/styledComponents';
 import { EMAIL_PATTERN } from '../../config/app-constants';
 import { useNavigate } from 'react-router-dom';
+import { Socket } from 'socket.io-client';
+
 
 interface IFormInput {
   consumer: string
 	chatName: string
 }
 
-const FormDialog: React.FC<{user: User}> = ({user}) => {
+const FormDialog: React.FC<{user: User, socket: Socket}> = ({user, socket}) => {
   const [open, setOpen] = React.useState(false);
 	const dispatch = useAppDispatch();
 	const { register, handleSubmit, resetField } = useForm<IFormInput>();
@@ -39,7 +41,9 @@ const FormDialog: React.FC<{user: User}> = ({user}) => {
 		dispatch(createNewChat(newChat)).then(response => {
 			response && navigate(data.chatName);
 			response && handleClose();
+			socket.emit('createNewChat', data.consumer);
 		});
+		
 	};
 
   return (

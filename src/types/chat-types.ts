@@ -1,3 +1,5 @@
+import { User } from "./user-types"
+
 export interface Chat {
 	_id?: string,
 	chatName: string,
@@ -8,4 +10,12 @@ export interface Chat {
 export interface ChatState {
 	currentChat: Chat,
 	allChats: Chat[]
+}
+
+export interface Message {
+	message: string,
+	room: string | undefined,
+	author: User,
+	time: string,
+	_id?: number
 }

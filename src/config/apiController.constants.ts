@@ -8,3 +8,9 @@ export enum ApiController {
 	currentUserChat = 'currentUserChat',
 	deleteChatById = 'deleteChatById',
 }
+
+export enum SocketEndPoints {
+	joinRoom = 'joinRoom',
+	receiveMessage = 'receiveMessage',
+	sendMessage = 'sendMessage'
+}

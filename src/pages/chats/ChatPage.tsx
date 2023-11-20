@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/store-hooks';
 import {
 	deleteChatById,
 	getAllChatsForUser,
+	getAllUserChats,
 	getCurrentUserChat,
 	selectAllChats,
 	selectCurrentChat
@@ -13,6 +14,10 @@ import FormDialog from '../../components/dialogForm/dialogForm';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { ChatCard } from '../../components/chatCard/ChatCard';
 import { User } from '../../types/user-types';
+import socketIOClient from 'socket.io-client';
+import { BASE_URL } from '../../config/app-constants';
+
+const socket = socketIOClient(BASE_URL);
 
 export default function ChatPage() {
 	const allChats = useAppSelector(selectAllChats);
@@ -23,8 +28,13 @@ export default function ChatPage() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		dispatch(getAllChatsForUser(user.email));
-	}, []);
+		socket.emit('joinUser', user.email);
+		socket.on('receiveChats', (chatsList) => {
+			dispatch(getAllUserChats(chatsList));
+		});
+		
+		// dispatch(getAllChatsForUser(user.email));
+	}, [socket]);
 
 	const selectChat = (chatName: string) => {
 		dispatch(getCurrentUserChat(chatName));
@@ -42,7 +52,7 @@ export default function ChatPage() {
 		<div className='chat-page'>
 			<div className='menu'>
 				<UserComponent user={user} />
-				<FormDialog user={user} />
+				<FormDialog user={user} socket={socket} />
 				<div className="all-chats">
 					{
 						allChats?.map((chat) => {

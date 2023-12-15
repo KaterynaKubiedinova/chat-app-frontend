@@ -24,28 +24,35 @@ export const CurrentChat = () => {
 	const dispatch = useAppDispatch();
 	const storedUser = sessionStorage.getItem('user')
 	const user: User = storedUser ? JSON.parse(storedUser) : {} as User;
-	const jwt = sessionStorage.getItem('AccessToken');
 
 	const [messagesList, setMessagesList] = useState<Message[]>([]);
 	const navigate = useNavigate();
 
 
 	useEffect(() => {
-		!jwt && navigate('/', { state: { chatName: chatName } });
+		!user.id && navigate('/', { state: { chatName: chatName } });
 
-		if (chatName && jwt) {
+		if (chatName) {
+			dispatch(getCurrentUserChat(chatName));
 			socket.emit(SocketEndPoints.joinRoom, chatName);
 			socket.on(SocketEndPoints.receiveMessage, (messagesList) => {
 				setMessagesList(messagesList.messages);
 			});
-			dispatch(getCurrentUserChat(chatName));
+		}
+
+		return () => {
+			socket.emit(SocketEndPoints.disconnectRoom, chatName);
 		}
 	}, [chatName]);
-	
+
 	useEffect(() => {
 		socket.on(SocketEndPoints.receiveMessage, (messagesList) => {
 			setMessagesList(messagesList.messages);
 		});
+
+		return () => {
+			socket.emit(SocketEndPoints.disconnectRoom, chatName);
+		}
 
 	}, [socket]);
 
@@ -58,9 +65,9 @@ export const CurrentChat = () => {
 						color: '#253E82',
 						marginRight: '25px'
 					}}>
-						{createLogo(currentChat.consumer)}
+						{createLogo(currentChat?.consumer)}
 					</Avatar>
-						<div>{currentChat.chatName}</div>
+						<div>{currentChat?.chatName}</div>
 					</div>
 				</div>
 			<div className="conversation-body">

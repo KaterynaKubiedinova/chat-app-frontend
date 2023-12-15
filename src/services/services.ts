@@ -21,22 +21,22 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const statusError = error.response?.status;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (statusError === 403 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const currentRefreshToken = sessionStorage.getItem('RefreshToken');
-        const response = await axios.post(ApiController.refresh, { currentRefreshToken });
-        const { accessToken, refreshToken } = response.data;
+        const response = await api.get(ApiController.refresh, {withCredentials:true});
+        const { accessToken } = response.data;
 
 				sessionStorage.setItem('AccessToken', accessToken);
-				sessionStorage.setItem('RefreshToken', refreshToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return axios(originalRequest);
-			} catch (error) {
-				await axios.get(ApiController.logout);
+        return api(originalRequest);
+      } catch (error) {
+        sessionStorage.clear();
+        await api.get(ApiController.logout, { withCredentials: true });
       }
     }
 

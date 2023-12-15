@@ -12,5 +12,10 @@ export enum ApiController {
 export enum SocketEndPoints {
 	joinRoom = 'joinRoom',
 	receiveMessage = 'receiveMessage',
-	sendMessage = 'sendMessage'
+	sendMessage = 'sendMessage',
+	createNewChat = 'createNewChat',
+	joinUser = 'joinUser',
+	receiveChats = 'receiveChats',
+	disconnectRoom = 'disconnectRoom',
+	disconnectUser= 'disconnectUser'
 }

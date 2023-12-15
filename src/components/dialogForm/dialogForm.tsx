@@ -13,6 +13,7 @@ import { CreateNewChatBtn } from '../../themes/styledComponents';
 import { EMAIL_PATTERN } from '../../config/app-constants';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
+import { SocketEndPoints } from '../../config/apiController.constants';
 
 
 interface IFormInput {
@@ -41,7 +42,7 @@ const FormDialog: React.FC<{user: User, socket: Socket}> = ({user, socket}) => {
 		dispatch(createNewChat(newChat)).then(response => {
 			response && navigate(data.chatName);
 			response && handleClose();
-			socket.emit('createNewChat', data.consumer);
+			socket.emit(SocketEndPoints.createNewChat, data.consumer);
 		});
 		
 	};

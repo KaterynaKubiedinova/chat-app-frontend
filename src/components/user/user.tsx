@@ -6,16 +6,20 @@ import { useAppDispatch } from '../../hooks/store-hooks';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../store/auth';
 import { User } from '../../types/user-types';
+import { Socket } from 'socket.io-client';
+import { SocketEndPoints } from '../../config/apiController.constants';
 
 const UserComponent: React.FC<{
-  user: User
-}> = ({ user }) => {
+	user: User,
+	socket: Socket
+}> = ({ user, socket }) => {
 	const dispatch = useAppDispatch();
 	const navigate = useNavigate();
 
 	const logOut = () => {
 		dispatch(logoutUser());
 		navigate('/');
+		socket.emit(SocketEndPoints.disconnectUser, user.email);
 	}
 	return (
 		<div className="user">

@@ -3,9 +3,7 @@ import './index.css'
 import { useAppDispatch, useAppSelector } from '../../hooks/store-hooks';
 import {
 	deleteChatById,
-	getAllChatsForUser,
 	getAllUserChats,
-	getCurrentUserChat,
 	selectAllChats,
 	selectCurrentChat
 } from '../../store/chats';
@@ -16,6 +14,8 @@ import { ChatCard } from '../../components/chatCard/ChatCard';
 import { User } from '../../types/user-types';
 import socketIOClient from 'socket.io-client';
 import { BASE_URL } from '../../config/app-constants';
+import { SocketEndPoints } from '../../config/apiController.constants';
+import { fetchAuthSuccess } from '../../store/auth';
 
 const socket = socketIOClient(BASE_URL);
 
@@ -28,22 +28,28 @@ export default function ChatPage() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		socket.emit('joinUser', user.email);
-		socket.on('receiveChats', (chatsList) => {
+		socket.emit(SocketEndPoints.joinUser, user.email);
+		socket.on(SocketEndPoints.receiveChats, (chatsList) => {
 			dispatch(getAllUserChats(chatsList));
 		});
 		
-		// dispatch(getAllChatsForUser(user.email));
+		return () => {
+			socket.emit(SocketEndPoints.disconnectUser, user.email);
+		}
 	}, [socket]);
 
+	useEffect(() => {
+		dispatch(fetchAuthSuccess(storedUser));
+		!storedUser && navigate('/');
+	}, [storedUser])
+
 	const selectChat = (chatName: string) => {
-		dispatch(getCurrentUserChat(chatName));
 		navigate(chatName);
 	};
 
 	const deleteChat = (id: string) => {
 		dispatch(deleteChatById(id));
-		if (currentChat._id === id) {
+		if (currentChat?._id === id) {
 			navigate(`/chat/${user.id}`);
 		}
 	};
@@ -51,7 +57,7 @@ export default function ChatPage() {
 	return (
 		<div className='chat-page'>
 			<div className='menu'>
-				<UserComponent user={user} />
+				<UserComponent user={user} socket={socket} />
 				<FormDialog user={user} socket={socket} />
 				<div className="all-chats">
 					{

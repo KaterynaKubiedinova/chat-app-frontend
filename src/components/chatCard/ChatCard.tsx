@@ -11,11 +11,12 @@ export const ChatCard: React.FC<{
 	selectChat: (chatName: string) => void,
 	deleteChat: (id: string) => void,
 	chat: Chat
-}> = ({ selectChat, chat, deleteChat }) => {
+}> = ({ selectChat, chat, deleteChat}) => {
 	const dispatch = useAppDispatch();
 
 	const handleSelectChat = (e: React.MouseEvent) => {
 		e.stopPropagation();
+		e.preventDefault();
 		selectChat(chat.chatName);
 	}
 
@@ -29,7 +30,7 @@ export const ChatCard: React.FC<{
 		<div className="chat-icon" onClick={handleSelectChat}>
 			<Avatar sx={{ bgcolor: '#BDE6CD', color: '#253E82', marginRight: '25px' }}>{ createLogo(chat.consumer) }</Avatar>
 			<div>
-				<div>{chat.chatName}</div>
+				<p className='chat-name'>{chat.chatName}</p>
 			</div>
 			<DeleteTwoToneIcon sx={{cursor: 'pointer'}} onClick={handleDeleteChat} />
 		</div>			

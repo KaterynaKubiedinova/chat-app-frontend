@@ -8,7 +8,7 @@ export interface Chat {
 }
 
 export interface ChatState {
-	currentChat: Chat,
+	currentChat: Chat | null,
 	allChats: Chat[]
 }
 

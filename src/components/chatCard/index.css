@@ -13,3 +13,7 @@
 	background: #253e823a;
 	width: 90%;
 }
+
+.chat-name {
+	word-wrap: break-all;
+}

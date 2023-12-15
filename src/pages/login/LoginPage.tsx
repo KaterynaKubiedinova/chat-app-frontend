@@ -36,7 +36,6 @@ export default function LoginPage() {
 				if (data) {
 					sessionStorage.setItem('user', JSON.stringify(data.user));
 					sessionStorage.setItem('AccessToken', data.accessToken);
-					sessionStorage.setItem('RefreshToken', data.refreshToken);
 					chatName ?
 						navigate(`/chat/${data.user.id}/${chatName}`) :
 						navigate(`/chat/${data.user.id}`);

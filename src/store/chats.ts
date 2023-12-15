@@ -6,7 +6,7 @@ import { ApiController } from "../config/apiController.constants";
 import api from "../services/services";
 
 const initialState: ChatState = {
-	currentChat: {} as Chat,
+	currentChat: null,
 	allChats: []
 }
 

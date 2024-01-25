@@ -8,13 +8,13 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import React, { useState } from 'react';
-import './index.css';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { EmailTextField, Error, LoginFormControl } from '../../themes/styledComponents';
+import { CustomH1, EmailTextField, Error, LoginFormControl } from '../../themes/styledComponents';
 import { loginUser } from '../../store/auth';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { EMAIL_PATTERN } from '../../config/app-constants';
+import { EMAIL_PATTERN } from '../../config/validationPatterns';
+import { LoginForm, LoginPageBlock } from './styledComponents';
 
 
 interface IFormInput {
@@ -34,8 +34,7 @@ export default function LoginPage() {
 		dispatch(loginUser(data))
 			.then((data) => {
 				if (data) {
-					sessionStorage.setItem('user', JSON.stringify(data.user));
-					sessionStorage.setItem('AccessToken', data.accessToken);
+					
 					chatName ?
 						navigate(`/chat/${data.user.id}/${chatName}`) :
 						navigate(`/chat/${data.user.id}`);
@@ -57,9 +56,9 @@ export default function LoginPage() {
 	}
 
 	return (
-		<div className='login-page'>
-			<h1>Login to your account!</h1>
-			<form className='login-form' onSubmit={handleSubmit(onSubmit)}>
+		<LoginPageBlock>
+			<CustomH1>Login to your account!</CustomH1>
+			<LoginForm onSubmit={handleSubmit(onSubmit)}>
 			<EmailTextField
 					type='email'
           id="standard-error-helper-text"
@@ -91,14 +90,14 @@ export default function LoginPage() {
           />
 				</LoginFormControl>
 				{errors.password && <Error>Password is required and should be correct</Error>}
-				<Button type='submit' variant="outlined" onClick={handleSubmit(onSubmit)}>
+				<Button type='submit' variant="outlined">
 					Sign in
 				</Button>
 				OR
 				<Button variant="outlined" onClick={signUp}>
 					Sign up
 				</Button>
-      </form>
-		</div>
+      </LoginForm>
+		</LoginPageBlock>
 	)
 }

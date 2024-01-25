@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Button, IconButton, Input, InputAdornment, InputLabel, TextField } from '@mui/material';
-import './index.css';
 import { registerUser } from '../../store/auth';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { EMAIL_PATTERN, PASSWORD_PATTERN } from '../../config/app-constants';
-import { Error, LoginFormControl } from '../../themes/styledComponents';
+import { EMAIL_PATTERN, PASSWORD_PATTERN } from '../../config/validationPatterns';
+import { CustomH1, Error, LoginFormControl } from '../../themes/styledComponents';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { LoginPageBlock, RegistrationForm } from './styledComponents';
 
 interface IFormInput {
 	name: string
@@ -44,14 +44,14 @@ const RegistrationPage = () => {
 	};
 
 	const signIn = () => {
-		navigate(`/`);
+		navigate(`/login`);
 	}
 
 	
 	return (
-		<div className='login-page'>
-			<h1>Create your account!</h1>
-			<form className='registration-form' onSubmit={handleSubmit(onSubmit)}>
+		<LoginPageBlock>
+			<CustomH1>Create your account!</CustomH1>
+			<RegistrationForm onSubmit={handleSubmit(onSubmit)}>
 				<TextField
 					type='text'
           label="Name"
@@ -103,19 +103,15 @@ const RegistrationPage = () => {
           />
 				</LoginFormControl>
 				{errors.password && <Error>Password is required and should be correct!</Error>}
-				<Button
-					type='submit'
-					variant="outlined"
-					onClick={handleSubmit(onSubmit)}
-				>
+				<Button type='submit' variant="outlined">
 					Sign up
 				</Button>
 				OR 
 				<Button variant="outlined" onClick={signIn}>
 					Sign in
 				</Button>
-      </form>
-		</div>
+      </RegistrationForm>
+		</LoginPageBlock>
 	)
 }
 

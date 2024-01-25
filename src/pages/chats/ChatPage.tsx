@@ -1,47 +1,57 @@
-import React, { useEffect } from 'react';
-import './index.css'
+import React, { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hooks/store-hooks';
 import {
 	deleteChatById,
-	getAllUserChats,
+	getUserChats,
 	selectAllChats,
 	selectCurrentChat
 } from '../../store/chats';
-import UserComponent from '../../components/user/user';
-import FormDialog from '../../components/dialogForm/dialogForm';
+import ProfileComponent from '../../components/profile/Profile';
+import FormDialog from '../../components/dialogForm/DialogForm';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { ChatCard } from '../../components/chatCard/ChatCard';
-import { User } from '../../types/user-types';
+import { User } from '../../types/userTypes';
 import socketIOClient from 'socket.io-client';
-import { BASE_URL } from '../../config/app-constants';
+import { BASE_URL } from '../../config/validationPatterns';
 import { SocketEndPoints } from '../../config/apiController.constants';
-import { fetchAuthSuccess } from '../../store/auth';
-
-const socket = socketIOClient(BASE_URL);
+import { fetchAuthSuccess, selectCurrentUser } from '../../store/auth';
+import { AllChatsBlock, ChatPageBlock, Menu } from './styledComponents';
 
 export default function ChatPage() {
 	const allChats = useAppSelector(selectAllChats);
 	const currentChat = useAppSelector(selectCurrentChat);
-	const storedUser = sessionStorage.getItem('user')
-	const user: User = storedUser ? JSON.parse(storedUser) : {} as User;
+	const currentUser = useAppSelector(selectCurrentUser);
+	const socket = useRef(socketIOClient(BASE_URL));
+
 	const dispatch = useAppDispatch();
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		socket.emit(SocketEndPoints.joinUser, user.email);
-		socket.on(SocketEndPoints.receiveChats, (chatsList) => {
-			dispatch(getAllUserChats(chatsList));
+		if (!currentUser) {
+			navigate('/login');
+		}
+		socket.current.emit(SocketEndPoints.JOIN_USER, currentUser?.email);
+		socket.current.on(SocketEndPoints.RECEIVE_CHATS, (chats) => {
+			dispatch(getUserChats(chats));
+		});
+	}, [])
+
+	useEffect(() => {
+		socket.current.on(SocketEndPoints.RECEIVE_CHATS, (chats) => {
+			console.log('oeitryhjelkh', socket)
+			dispatch(getUserChats(chats));
 		});
 		
 		return () => {
-			socket.emit(SocketEndPoints.disconnectUser, user.email);
+			socket.current.emit(SocketEndPoints.DISCONNECT_USER, currentUser?.email);
 		}
 	}, [socket]);
 
-	useEffect(() => {
-		dispatch(fetchAuthSuccess(storedUser));
-		!storedUser && navigate('/');
-	}, [storedUser])
+	// 	useEffect(() => {
+	// 	socket.current.on(SocketEndPoints.RECEIVE_CHATS, (chatsList) => {
+	// 		dispatch(getAllUserChats(chatsList));
+	// 	});
+	// }, [])
 
 	const selectChat = (chatName: string) => {
 		navigate(chatName);
@@ -49,31 +59,31 @@ export default function ChatPage() {
 
 	const deleteChat = (id: string) => {
 		dispatch(deleteChatById(id));
-		if (currentChat?._id === id) {
-			navigate(`/chat/${user.id}`);
+		if (currentChat?.id === id) {
+			navigate(`/chat/${currentUser?.id}`);
 		}
 	};
 
 	return (
-		<div className='chat-page'>
-			<div className='menu'>
-				<UserComponent user={user} socket={socket} />
-				<FormDialog user={user} socket={socket} />
-				<div className="all-chats">
+		<ChatPageBlock>
+			<Menu>
+				<ProfileComponent user={currentUser} socket={socket.current} />
+				<FormDialog user={currentUser} socket={socket.current} />
+				<AllChatsBlock>
 					{
 						allChats?.map((chat) => {
 							return (
 								<ChatCard
-									key={chat._id}
+									key={chat.id}
 									selectChat={selectChat}
 									chat={chat}
 									deleteChat={deleteChat}
 								/>)
 						})
 					}
-					</div>
-			</div>
+					</AllChatsBlock>
+			</Menu>
 			<Outlet />
-		</div>
+		</ChatPageBlock>
 	)
 }

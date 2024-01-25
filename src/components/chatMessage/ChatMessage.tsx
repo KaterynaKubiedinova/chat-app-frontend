@@ -1,17 +1,19 @@
 import React from 'react';
-import { Message } from '../../types/chat-types';
-import './index.css';
+import { Message } from '../../types/chatTypes';
+import { MessageBlock, MessageContentBlock, MessageMetaBlock } from './styledComponents';
 
-export const ChatMessage: React.FC<{message: Message, id: string}> = ({message, id}) => {
+export const ChatMessage: React.FC<{message: Message, isAuthorCurrentUser: boolean}> = ({message, isAuthorCurrentUser}) => {
 	return (
-		<div id={id} className='message'>			
-			<div className="message-content">
-				<div><p>{message.message}</p></div>
-			</div>
-			<div className="message-meta">
+		<MessageBlock isAuthorCurrentUser={isAuthorCurrentUser}>			
+			<MessageContentBlock isAuthorCurrentUser={isAuthorCurrentUser}>
+				<div>
+					<p>{message.message}</p>
+				</div>
+			</MessageContentBlock>
+			<MessageMetaBlock isAuthorCurrentUser={isAuthorCurrentUser}>
 				<p>{message.time}</p>
-				<p>{message.author.name} { message.author.surname}</p>
-		</div>
-	</div>
+				<p>{message.author?.name} { message.author?.surname}</p>
+		</MessageMetaBlock>
+	</MessageBlock>
 	)
 }

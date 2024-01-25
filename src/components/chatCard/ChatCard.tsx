@@ -1,38 +1,35 @@
 import React from 'react';
-import { Avatar } from '@mui/material';
-import { createLogo } from '../../utils/create-logo';
-import { Chat } from '../../types/chat-types';
-import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
-import './index.css';
+import { ChatDTO } from '../../types/chatTypes';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { getAllChatsForUser } from '../../store/chats';
+import { CustomAvatar } from '../avatar/Avatar';
+import { ChatIcon, ChatName, DeleteButton } from './styledComponents';
 
 export const ChatCard: React.FC<{
 	selectChat: (chatName: string) => void,
 	deleteChat: (id: string) => void,
-	chat: Chat
+	chat: ChatDTO
 }> = ({ selectChat, chat, deleteChat}) => {
 	const dispatch = useAppDispatch();
 
 	const handleSelectChat = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		e.preventDefault();
+
 		selectChat(chat.chatName);
 	}
 
 	const handleDeleteChat = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		chat._id && deleteChat(chat._id);
+		chat.id && deleteChat(chat.id);
 		dispatch(getAllChatsForUser(chat.supplier));
 	}
 
 	return (
-		<div className="chat-icon" onClick={handleSelectChat}>
-			<Avatar sx={{ bgcolor: '#BDE6CD', color: '#253E82', marginRight: '25px' }}>{ createLogo(chat.consumer) }</Avatar>
+		<ChatIcon onClick={handleSelectChat}>
+			<CustomAvatar email={chat.consumer}/>
 			<div>
-				<p className='chat-name'>{chat.chatName}</p>
+				<ChatName>{chat.chatName}</ChatName>
 			</div>
-			<DeleteTwoToneIcon sx={{cursor: 'pointer'}} onClick={handleDeleteChat} />
-		</div>			
+			<DeleteButton onClick={handleDeleteChat} />
+		</ChatIcon>			
 	)
 }

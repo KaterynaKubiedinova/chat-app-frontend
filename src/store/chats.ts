@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { Chat, ChatState } from "../types/chat-types"
+import { Chat, ChatState } from "../types/chatTypes"
 import { AppDispatch, RootState } from "./store";
 import { AxiosError } from "axios";
 import { ApiController } from "../config/apiController.constants";
@@ -7,7 +7,7 @@ import api from "../services/services";
 
 const initialState: ChatState = {
 	currentChat: null,
-	allChats: []
+	chats: []
 }
 
 export const chatSlice = createSlice({
@@ -17,23 +17,23 @@ export const chatSlice = createSlice({
 		setCurrentChat: (store, { payload, type }) => {
 			store.currentChat = payload;
 		},
-		getAllUserChats: (state, action) => {
-			state.allChats = action.payload;
+		getUserChats: (state, action) => {
+			state.chats = action.payload;
 		}
 	}
 })
 
-export const { setCurrentChat, getAllUserChats } = chatSlice.actions;
+export const { setCurrentChat, getUserChats } = chatSlice.actions;
 
 export const selectCurrentChat = (state: RootState) => state.chat.currentChat;
-export const selectAllChats = (state: RootState) => state.chat.allChats;
+export const selectAllChats = (state: RootState) => state.chat.chats;
 
 export const createNewChat = (formData: Chat) => async (dispatch: AppDispatch) => {
 	try {
-		const response = await api.post(ApiController.createChat, formData);
+		const response = await api.post(ApiController.CREATE_CHAT, formData);
 		const { data } = response;
 	
-		data && dispatch(getAllUserChats(data.allUserChats));
+		data && dispatch(getUserChats(data.userChats));
 
 		return data;
 	} catch (e) {
@@ -43,10 +43,10 @@ export const createNewChat = (formData: Chat) => async (dispatch: AppDispatch) =
 
 export const getAllChatsForUser = (email: string) => async (dispatch: AppDispatch) => {
 	try {
-		const response = await api.get(ApiController.allUserChats, {params: {email}});
+		const response = await api.get(ApiController.ALL_USER_CHATS, {params: {email}});
 		const { data } = response;
 
-		data && dispatch(getAllUserChats(data));
+		data && dispatch(getUserChats(data));
 
 		return data;
 	} catch (e) {
@@ -56,7 +56,7 @@ export const getAllChatsForUser = (email: string) => async (dispatch: AppDispatc
 
 export const getCurrentUserChat = (chatName: string) => async (dispatch: AppDispatch) => {
 	try {
-		const response = await api.get(ApiController.currentUserChat, { params: { chatName } });
+		const response = await api.get(ApiController.CURRENT_USER_CHAT, { params: { chatName } });
 		const { data } = response;
 
 		data && dispatch(setCurrentChat(data))
@@ -67,7 +67,7 @@ export const getCurrentUserChat = (chatName: string) => async (dispatch: AppDisp
 
 export const deleteChatById = (id: string) => async (dispatch: AppDispatch) => {
 	try {
-		await api.delete(ApiController.deleteChatById, {params: { id }});
+		await api.delete(ApiController.DELETE_CHAT_BY_ID, {params: { id }});
 	} catch (e) {
 		return e;
 	}

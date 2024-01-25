@@ -1,19 +1,19 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import './index.css'
 import { Socket } from 'socket.io-client';
-import { Message } from '../../types/chat-types';
-import { User } from '../../types/user-types';
+import { Message } from '../../types/chatTypes';
+import { UserDTO } from '../../types/userTypes';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import Picker from '@emoji-mart/react';
 import SendIcon from '@mui/icons-material/Send';
 import { useFocus } from '../../hooks/focus-hook';
 import { SocketEndPoints } from '../../config/apiController.constants';
+import { ConversationButton, ConversationFormDiv, ConversationInput, EmojiButton, EmojiPicker, EmojiPickerBlock } from './styledComponents';
 
 export const ConversationForm: React.FC<{
 	chatName: string | undefined,
 	socket: Socket,
 	messagesList: Message[],
-	user: User,
+	user: UserDTO | null,
 }> = ({ chatName, socket, messagesList, user}) => {
 	const [message, setMessage] = useState('');
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -37,13 +37,10 @@ export const ConversationForm: React.FC<{
 				message: message,
 				room: chatName,
 				author: user,
-				time:
-					new Date(Date.now()).getHours() +
-					':' +
-					new Date(Date.now()).getMinutes(),
+				time: `${new Date(Date.now()).getHours()}:${new Date(Date.now()).getMinutes()}`,
 			};
 
-			socket.emit(SocketEndPoints.sendMessage, [newMessage, ...messagesList], chatName);
+			socket.emit(SocketEndPoints.SEND_MESSAGE, [newMessage, ...messagesList], chatName);
 			
 			setMessage('');
 		};		
@@ -54,29 +51,26 @@ export const ConversationForm: React.FC<{
 	};
 
 	return (
-		<div className="conversation-form">
-				<input 	className='conversation-input'
-								value={message}
-								onChange={printMessage}
-								ref={htmlElRef}
-								placeholder='Enter your message'
+		<ConversationFormDiv>
+				<ConversationInput
+					value={message}
+					onChange={printMessage}
+					ref={htmlElRef}
+					placeholder='Enter your message'
 				/>
-				<div className='emoji-picker-block'>
+				<EmojiPickerBlock>
 					{showEmojiPicker && (
-						<div className="emoji-picker" onMouseLeave={toggleEmojiPicker}>
+						<EmojiPicker onMouseLeave={toggleEmojiPicker}>
 							<Picker onEmojiSelect={handleEmojiSelect}  />
-						</div>
+						</EmojiPicker>
 				)}
-					<button
-						className='emoji-button'
-						onMouseEnter={toggleEmojiPicker}
-					>
+					<EmojiButton onMouseEnter={toggleEmojiPicker}>
 							<SentimentSatisfiedAltIcon />
-					</button>
-    	</div>
-				<button className='conversation-button' onClick={sendMessage} >
+					</EmojiButton>
+    	</EmojiPickerBlock>
+				<ConversationButton onClick={sendMessage} >
 					<SendIcon />
-				</button>
-			</div>
+				</ConversationButton>
+			</ConversationFormDiv>
 	)
 }

@@ -1,89 +1,80 @@
-import { Avatar } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { createLogo } from '../../../utils/create-logo';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../hooks/store-hooks';
 import { getCurrentUserChat, selectCurrentChat } from '../../../store/chats';
-import './index.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
-import { BASE_URL } from '../../../config/app-constants';
-import { User } from '../../../types/user-types';
+import { BASE_URL } from '../../../config/validationPatterns';
 import { ConversationForm } from '../../../components/conversationForm/ConversationForm';
-import { Message } from '../../../types/chat-types';
+import { MessageDTO } from '../../../types/chatTypes';
 import { ChatMessage } from '../../../components/chatMessage/ChatMessage';
 import { SocketEndPoints } from '../../../config/apiController.constants';
-
-
-
-
-const socket = socketIOClient(BASE_URL);
+import { CustomAvatar } from '../../../components/avatar/Avatar';
+import { selectCurrentUser } from '../../../store/auth';
+import { ConversationBlock, ConversationBodyBlock, ConversationHeaderBlock, HeaderContentBlock } from './styledComponents';
 
 export const CurrentChat = () => {
 	const currentChat = useAppSelector(selectCurrentChat);
 	const { chatName } = useParams();
 	const dispatch = useAppDispatch();
 	const storedUser = sessionStorage.getItem('user')
-	const user: User = storedUser ? JSON.parse(storedUser) : {} as User;
+	const currentUser = useAppSelector(selectCurrentUser);
 
-	const [messagesList, setMessagesList] = useState<Message[]>([]);
+	const socket = useRef(socketIOClient(BASE_URL));
+
+	const [messagesList, setMessagesList] = useState<MessageDTO[]>([]);
 	const navigate = useNavigate();
 
 
 	useEffect(() => {
-		!user.id && navigate('/', { state: { chatName: chatName } });
+		if (!storedUser) {
+			navigate('/login', { state: { chatName: chatName } });
+		}
 
 		if (chatName) {
 			dispatch(getCurrentUserChat(chatName));
-			socket.emit(SocketEndPoints.joinRoom, chatName);
-			socket.on(SocketEndPoints.receiveMessage, (messagesList) => {
+			socket.current.emit(SocketEndPoints.JOIN_ROOM, chatName);
+			socket.current.on(SocketEndPoints.RECEIVE_MESSAGE, (messagesList) => {
 				setMessagesList(messagesList.messages);
 			});
 		}
 
 		return () => {
-			socket.emit(SocketEndPoints.disconnectRoom, chatName);
+			socket.current.emit(SocketEndPoints.DISCONNECT_ROOM, chatName);
 		}
 	}, [chatName]);
 
 	useEffect(() => {
-		socket.on(SocketEndPoints.receiveMessage, (messagesList) => {
+		socket.current.on(SocketEndPoints.RECEIVE_MESSAGE, (messagesList) => {
 			setMessagesList(messagesList.messages);
 		});
 
 		return () => {
-			socket.emit(SocketEndPoints.disconnectRoom, chatName);
+			socket.current.emit(SocketEndPoints.DISCONNECT_ROOM, chatName);
 		}
-
 	}, [socket]);
 
 	return (
-		<div className='conversation'>
-			<div className="conversation-header">
-				<div className="header-content">
-					<Avatar sx={{
-						bgcolor: '#BDE6CD',
-						color: '#253E82',
-						marginRight: '25px'
-					}}>
-						{createLogo(currentChat?.consumer)}
-					</Avatar>
+		<ConversationBlock>
+			<ConversationHeaderBlock>
+				<HeaderContentBlock>
+					<CustomAvatar email={currentChat?.consumer} />
 						<div>{currentChat?.chatName}</div>
-					</div>
-				</div>
-			<div className="conversation-body">
+					</HeaderContentBlock>
+				</ConversationHeaderBlock>
+			<ConversationBodyBlock>
 				{messagesList.map((message) => {
-					const id = message.author.email === user.email ? 'you' : 'other';
+					const isAuthorCurrentUser = message.author?.email === currentUser?.email;
 					return (
-						<ChatMessage message={message} id={id} key={message._id}/>
+						<ChatMessage message={message} isAuthorCurrentUser={isAuthorCurrentUser} key={message.id}/>
 						)
 				})}
-			</div>
+			</ConversationBodyBlock>
 			<ConversationForm
 				chatName={chatName}
-				socket={socket}
+				socket={socket.current}
 				messagesList={messagesList}
-				user={user}
+				user={currentUser}
 			/>
-		</div>
+		</ConversationBlock>
 	)
 }

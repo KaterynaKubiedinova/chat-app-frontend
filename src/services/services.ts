@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BASE_URL } from '../config/app-constants';
+import { BASE_URL } from '../config/validationPatterns';
 import { ApiController } from '../config/apiController.constants';
 
 const api = axios.create({
@@ -27,7 +27,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await api.get(ApiController.refresh, {withCredentials:true});
+        const response = await api.get(ApiController.REFRESH, {withCredentials:true});
         const { accessToken } = response.data;
 
 				sessionStorage.setItem('AccessToken', accessToken);
@@ -36,7 +36,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (error) {
         sessionStorage.clear();
-        await api.get(ApiController.logout, { withCredentials: true });
+        await api.get(ApiController.LOGOUT, { withCredentials: true });
       }
     }
 

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, FormControl, TextField } from "@mui/material";
+import { Avatar, Button, FormControl, TextField } from "@mui/material";
 
 export const LoginFormControl = styled(FormControl)`
 	margin: 1; 
@@ -21,3 +21,25 @@ export const Error = styled.p`
 export const CreateNewChatBtn = styled(Button)`
 	flex-grow: 1;
 `;
+
+export const StyledAvatar = styled(Avatar)`
+	bgcolor: #BDE6CD;
+	color: #253E82;
+	marginRight: 25px;
+`
+
+export const ExplanationText = styled.div`
+	color: #224D97;
+	display: flex;
+	align-items: center;
+	margin: auto;
+	justify-content: center;
+	background: #1a70cb3c;
+	height: 20px;
+	padding: 7px;
+	border-radius: 10px;
+`
+
+export const CustomH1 = styled.h1`
+	color: #253E82;
+`

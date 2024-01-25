@@ -7,10 +7,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { User } from '../../types/user-types';
+import { User } from '../../types/userTypes';
 import { createNewChat } from '../../store/chats';
 import { CreateNewChatBtn } from '../../themes/styledComponents';
-import { EMAIL_PATTERN } from '../../config/app-constants';
+import { EMAIL_PATTERN } from '../../config/validationPatterns';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { SocketEndPoints } from '../../config/apiController.constants';
@@ -21,7 +21,7 @@ interface IFormInput {
 	chatName: string
 }
 
-const FormDialog: React.FC<{user: User, socket: Socket}> = ({user, socket}) => {
+const FormDialog: React.FC<{user: User | null, socket: Socket}> = ({user, socket}) => {
   const [open, setOpen] = React.useState(false);
 	const dispatch = useAppDispatch();
 	const { register, handleSubmit, resetField } = useForm<IFormInput>();
@@ -38,11 +38,11 @@ const FormDialog: React.FC<{user: User, socket: Socket}> = ({user, socket}) => {
   };
 
 	const onSubmit: SubmitHandler<IFormInput> = (data) => {
-		const newChat = { ...data, supplier: user.email };
+		const newChat = { ...data, supplier: user?.email ?? 'User' };
 		dispatch(createNewChat(newChat)).then(response => {
 			response && navigate(data.chatName);
 			response && handleClose();
-			socket.emit(SocketEndPoints.createNewChat, data.consumer);
+			socket.emit(SocketEndPoints.CREATE_NEW_CHAT, data.consumer);
 		});
 		
 	};
@@ -57,7 +57,6 @@ const FormDialog: React.FC<{user: User, socket: Socket}> = ({user, socket}) => {
 				<DialogContent>
 					<TextField
 							type='email'
-							id="standard-error-helper-text"
 							label="Consumer email"
 							fullWidth
 							variant="standard"
@@ -67,7 +66,6 @@ const FormDialog: React.FC<{user: User, socket: Socket}> = ({user, socket}) => {
 					/>
 					<TextField
 						type='text'
-						id="standard-error-helper-text"
 						label="Chat name"
 						fullWidth
 						variant="standard"

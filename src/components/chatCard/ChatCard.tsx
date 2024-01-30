@@ -6,30 +6,31 @@ import { CustomAvatar } from '../avatar/Avatar';
 import { ChatIcon, ChatName, DeleteButton } from './styledComponents';
 
 export const ChatCard: React.FC<{
-	selectChat: (chatName: string) => void,
-	deleteChat: (id: string) => void,
-	chat: ChatDTO
-}> = ({ selectChat, chat, deleteChat}) => {
-	const dispatch = useAppDispatch();
+  selectChat: (chatName: string) => void;
+  deleteChat: (id: string) => void;
+  chat: ChatDTO;
+}> = ({ selectChat, chat, deleteChat }) => {
+  const dispatch = useAppDispatch();
 
-	const handleSelectChat = (e: React.MouseEvent) => {
+  const handleSelectChat = () => {
+    selectChat(chat.chatName);
+  };
 
-		selectChat(chat.chatName);
-	}
+  const handleDeleteChat = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (chat._id) {
+      deleteChat(chat._id);
+    }
+    dispatch(getAllChatsForUser(chat.supplier));
+  };
 
-	const handleDeleteChat = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		chat.id && deleteChat(chat.id);
-		dispatch(getAllChatsForUser(chat.supplier));
-	}
-
-	return (
-		<ChatIcon onClick={handleSelectChat}>
-			<CustomAvatar email={chat.consumer}/>
-			<div>
-				<ChatName>{chat.chatName}</ChatName>
-			</div>
-			<DeleteButton onClick={handleDeleteChat} />
-		</ChatIcon>			
-	)
-}
+  return (
+    <ChatIcon onClick={handleSelectChat}>
+      <CustomAvatar email={chat.consumer} />
+      <div>
+        <ChatName>{chat.chatName}</ChatName>
+      </div>
+      <DeleteButton onClick={handleDeleteChat} />
+    </ChatIcon>
+  );
+};

@@ -3,78 +3,86 @@ import { useAppDispatch, useAppSelector } from '../../../hooks/store-hooks';
 import { getCurrentUserChat, selectCurrentChat } from '../../../store/chats';
 import { useNavigate, useParams } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
-import { BASE_URL } from '../../../config/validationPatterns';
 import { ConversationForm } from '../../../components/conversationForm/ConversationForm';
 import { MessageDTO } from '../../../types/chatTypes';
 import { ChatMessage } from '../../../components/chatMessage/ChatMessage';
 import { SocketEndPoints } from '../../../config/apiController.constants';
 import { CustomAvatar } from '../../../components/avatar/Avatar';
 import { selectCurrentUser } from '../../../store/auth';
-import { ConversationBlock, ConversationBodyBlock, ConversationHeaderBlock, HeaderContentBlock } from './styledComponents';
+import {
+  ConversationBlock,
+  ConversationBodyBlock,
+  ConversationHeaderBlock,
+  HeaderContentBlock
+} from './styledComponents';
 
 export const CurrentChat = () => {
-	const currentChat = useAppSelector(selectCurrentChat);
-	const { chatName } = useParams();
-	const dispatch = useAppDispatch();
-	const storedUser = sessionStorage.getItem('user')
-	const currentUser = useAppSelector(selectCurrentUser);
+  const currentChat = useAppSelector(selectCurrentChat);
+  const { chatName } = useParams();
+  const dispatch = useAppDispatch();
+  const storedUser = sessionStorage.getItem('user');
+  const currentUser = useAppSelector(selectCurrentUser);
 
-	const socket = useRef(socketIOClient(BASE_URL));
+  const socket = useRef(socketIOClient(process.env.PUBLIC_URL));
 
-	const [messagesList, setMessagesList] = useState<MessageDTO[]>([]);
-	const navigate = useNavigate();
+  const [messagesList, setMessagesList] = useState<MessageDTO[]>([]);
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!storedUser) {
+      navigate('/login', { state: { chatName: chatName } });
+    }
 
-	useEffect(() => {
-		if (!storedUser) {
-			navigate('/login', { state: { chatName: chatName } });
-		}
+    if (chatName) {
+      dispatch(getCurrentUserChat(chatName));
+      socket.current.emit(SocketEndPoints.JOIN_ROOM, chatName);
+      socket.current.on(SocketEndPoints.RECEIVE_MESSAGE, (messagesList) => {
+        setMessagesList(messagesList.messages);
+      });
+    }
 
-		if (chatName) {
-			dispatch(getCurrentUserChat(chatName));
-			socket.current.emit(SocketEndPoints.JOIN_ROOM, chatName);
-			socket.current.on(SocketEndPoints.RECEIVE_MESSAGE, (messagesList) => {
-				setMessagesList(messagesList.messages);
-			});
-		}
+    return () => {
+      socket.current.emit(SocketEndPoints.DISCONNECT_ROOM, chatName);
+    };
+  }, [chatName]);
 
-		return () => {
-			socket.current.emit(SocketEndPoints.DISCONNECT_ROOM, chatName);
-		}
-	}, [chatName]);
+  useEffect(() => {
+    socket.current.on(SocketEndPoints.RECEIVE_MESSAGE, (messagesList) => {
+      setMessagesList(messagesList.messages);
+    });
 
-	useEffect(() => {
-		socket.current.on(SocketEndPoints.RECEIVE_MESSAGE, (messagesList) => {
-			setMessagesList(messagesList.messages);
-		});
+    return () => {
+      socket.current.emit(SocketEndPoints.DISCONNECT_ROOM, chatName);
+    };
+  }, [socket]);
 
-		return () => {
-			socket.current.emit(SocketEndPoints.DISCONNECT_ROOM, chatName);
-		}
-	}, [socket]);
-
-	return (
-		<ConversationBlock>
-			<ConversationHeaderBlock>
-				<HeaderContentBlock>
-					<CustomAvatar email={currentChat?.consumer} />
-						<div>{currentChat?.chatName}</div>
-					</HeaderContentBlock>
-				</ConversationHeaderBlock>
-			<ConversationBodyBlock>
-				{messagesList.map((message) => {
-					const isAuthorCurrentUser = message.author?.email === currentUser?.email;
-					return (
-						<ChatMessage message={message} isAuthorCurrentUser={isAuthorCurrentUser} key={message.id}/>
-						)
-				})}
-			</ConversationBodyBlock>
-			<ConversationForm
-				chatName={chatName}
-				socket={socket.current}
-				messagesList={messagesList}
-				user={currentUser}
-			/>
-		</ConversationBlock>
-	)
-}
+  return (
+    <ConversationBlock>
+      <ConversationHeaderBlock>
+        <HeaderContentBlock>
+          <CustomAvatar email={currentChat?.consumer} />
+          <div>{currentChat?.chatName}</div>
+        </HeaderContentBlock>
+      </ConversationHeaderBlock>
+      <ConversationBodyBlock>
+        {messagesList.map((message) => {
+          const isAuthorCurrentUser =
+            message.author?.email === currentUser?.email;
+          return (
+            <ChatMessage
+              message={message}
+              isAuthorCurrentUser={isAuthorCurrentUser}
+              key={message._id}
+            />
+          );
+        })}
+      </ConversationBodyBlock>
+      <ConversationForm
+        chatName={chatName}
+        socket={socket.current}
+        messagesList={messagesList}
+        user={currentUser}
+      />
+    </ConversationBlock>
+  );
+};

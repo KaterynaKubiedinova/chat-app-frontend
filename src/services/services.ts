@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { BASE_URL } from '../config/validationPatterns';
 import { ApiController } from '../config/apiController.constants';
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: process.env.PUBLIC_URL
 });
 
 api.interceptors.request.use(
@@ -27,10 +26,12 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await api.get(ApiController.REFRESH, {withCredentials:true});
+        const response = await api.get(ApiController.REFRESH, {
+          withCredentials: true
+        });
         const { accessToken } = response.data;
 
-				sessionStorage.setItem('AccessToken', accessToken);
+        sessionStorage.setItem('AccessToken', accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
@@ -44,4 +45,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api
+export default api;

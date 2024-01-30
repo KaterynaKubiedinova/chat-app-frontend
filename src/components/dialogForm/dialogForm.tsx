@@ -15,37 +15,45 @@ import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { SocketEndPoints } from '../../config/apiController.constants';
 
+type FormInput = {
+  consumer: string;
+  chatName: string;
+};
 
-interface IFormInput {
-  consumer: string
-	chatName: string
-}
-
-const FormDialog: React.FC<{user: User | null, socket: Socket}> = ({user, socket}) => {
+const FormDialog: React.FC<{ user: User | null; socket: Socket }> = ({
+  user,
+  socket
+}) => {
   const [open, setOpen] = React.useState(false);
-	const dispatch = useAppDispatch();
-	const { register, handleSubmit, resetField } = useForm<IFormInput>();
-	const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { register, handleSubmit, resetField } = useForm<FormInput>({
+    defaultValues: {
+      consumer: '',
+      chatName: ''
+    }
+  });
+  const navigate = useNavigate();
 
   const handleClickOpen = () => {
-		setOpen(true);
+    setOpen(true);
   };
 
   const handleClose = () => {
-		setOpen(false);
-		resetField('consumer');
-		resetField('chatName');
+    setOpen(false);
+    resetField('consumer');
+    resetField('chatName');
   };
 
-	const onSubmit: SubmitHandler<IFormInput> = (data) => {
-		const newChat = { ...data, supplier: user?.email ?? 'User' };
-		dispatch(createNewChat(newChat)).then(response => {
-			response && navigate(data.chatName);
-			response && handleClose();
-			socket.emit(SocketEndPoints.CREATE_NEW_CHAT, data.consumer);
-		});
-		
-	};
+  const onSubmit: SubmitHandler<FormInput> = (data) => {
+    const newChat = { ...data, supplier: user?.email ?? 'User' };
+    dispatch(createNewChat(newChat)).then((response) => {
+      if (response) {
+        navigate(data.chatName);
+        handleClose();
+      }
+      socket.emit(SocketEndPoints.CREATE_NEW_CHAT, data.consumer);
+    });
+  };
 
   return (
     <div>
@@ -54,25 +62,26 @@ const FormDialog: React.FC<{user: User | null, socket: Socket}> = ({user, socket
       </CreateNewChatBtn>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Create new chat</DialogTitle>
-				<DialogContent>
-					<TextField
-							type='email'
-							label="Consumer email"
-							fullWidth
-							variant="standard"
-							{...register("consumer", {
-								required: true, pattern: EMAIL_PATTERN, 
-							})}
-					/>
-					<TextField
-						type='text'
-						label="Chat name"
-						fullWidth
-						variant="standard"
-						{...register("chatName", {
-							required: true, 
-						})}
-					/>
+        <DialogContent>
+          <TextField
+            type="email"
+            label="Consumer email"
+            fullWidth
+            variant="standard"
+            {...register('consumer', {
+              required: true,
+              pattern: EMAIL_PATTERN
+            })}
+          />
+          <TextField
+            type="text"
+            label="Chat name"
+            fullWidth
+            variant="standard"
+            {...register('chatName', {
+              required: true
+            })}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
@@ -81,6 +90,6 @@ const FormDialog: React.FC<{user: User | null, socket: Socket}> = ({user, socket
       </Dialog>
     </div>
   );
-}
+};
 
 export default FormDialog;

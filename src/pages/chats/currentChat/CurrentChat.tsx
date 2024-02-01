@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../hooks/store-hooks';
-import { getCurrentUserChat, selectCurrentChat } from '../../../store/chats';
+import { selectCurrentChat } from '../../../store/chats';
 import { useNavigate, useParams } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
 import { ConversationForm } from '../../../components/conversationForm/ConversationForm';
@@ -15,6 +15,7 @@ import {
   ConversationHeaderBlock,
   HeaderContentBlock
 } from './styledComponents';
+import { getCurrentUserChat } from '../../../services/services';
 
 export const CurrentChat = () => {
   const currentChat = useAppSelector(selectCurrentChat);
@@ -23,7 +24,8 @@ export const CurrentChat = () => {
   const storedUser = sessionStorage.getItem('user');
   const currentUser = useAppSelector(selectCurrentUser);
 
-  const socket = useRef(socketIOClient(process.env.PUBLIC_URL));
+  const URL: string = process.env.REACT_APP_API_URL || '';
+  const socket = useRef(socketIOClient(URL));
 
   const [messagesList, setMessagesList] = useState<MessageDTO[]>([]);
   const navigate = useNavigate();

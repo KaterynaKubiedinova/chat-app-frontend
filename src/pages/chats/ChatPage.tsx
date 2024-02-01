@@ -1,38 +1,42 @@
 import React, { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hooks/store-hooks';
 import {
-  deleteChatById,
   getUserChats,
   selectAllChats,
   selectCurrentChat
 } from '../../store/chats';
 import ProfileComponent from '../../components/profile/Profile';
-import FormDialog from '../../components/dialogForm/DialogForm';
-import { Outlet, useNavigate } from 'react-router-dom';
+import FormDialog from '../../components/dialogForm/dialogForm';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { ChatCard } from '../../components/chatCard/ChatCard';
 import socketIOClient from 'socket.io-client';
 import { SocketEndPoints } from '../../config/apiController.constants';
 import { selectCurrentUser } from '../../store/auth';
 import { AllChatsBlock, ChatPageBlock, Menu } from './styledComponents';
+import { deleteChatById, getUserByID } from '../../services/services';
 
 export default function ChatPage() {
   const сhats = useAppSelector(selectAllChats);
   const currentChat = useAppSelector(selectCurrentChat);
   const currentUser = useAppSelector(selectCurrentUser);
-  const socket = useRef(socketIOClient(process.env.PUBLIC_URL));
+
+  const URL: string = process.env.REACT_APP_API_URL || '';
+  const socket = useRef(socketIOClient(URL));
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { userId } = useParams();
 
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-    }
+    dispatch(getUserByID(userId || ''));
+  }, []);
+
+  useEffect(() => {
     socket.current.emit(SocketEndPoints.JOIN_USER, currentUser?.email);
     socket.current.on(SocketEndPoints.RECEIVE_CHATS, (chats) => {
       dispatch(getUserChats(chats));
     });
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     socket.current.on(SocketEndPoints.RECEIVE_CHATS, (chats) => {

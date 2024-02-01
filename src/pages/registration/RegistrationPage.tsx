@@ -8,7 +8,6 @@ import {
   InputLabel,
   TextField
 } from '@mui/material';
-import { registerUser } from '../../store/auth';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import {
@@ -22,6 +21,7 @@ import {
 } from '../../themes/styledComponents';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { LoginPageBlock, RegistrationForm } from './styledComponents';
+import { postRegisteredUser } from '../../services/services';
 
 type FormInput = {
   name: string;
@@ -48,19 +48,11 @@ const RegistrationPage = () => {
   const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<FormInput> = (data) => {
-    dispatch(registerUser(data))
-      .then((data) => {
-        if (data) {
-          sessionStorage.setItem('user', JSON.stringify(data.user));
-          sessionStorage.setItem('AccessToken', data.accessToken);
-          sessionStorage.setItem('RefreshToken', data.refreshToken);
-          navigate(`/chat/${data.user.id}`);
-        }
-      })
-      .catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error('jsafh', e);
-      });
+    dispatch(postRegisteredUser(data)).then((data) => {
+      if (data) {
+        navigate(`/chat/${data.payload.id}`);
+      }
+    });
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);

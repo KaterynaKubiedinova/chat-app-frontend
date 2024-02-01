@@ -1,9 +1,9 @@
 import React from 'react';
 import { ChatDTO } from '../../types/chatTypes';
 import { useAppDispatch } from '../../hooks/store-hooks';
-import { getAllChatsForUser } from '../../store/chats';
 import { CustomAvatar } from '../avatar/Avatar';
 import { ChatIcon, ChatName, DeleteButton } from './styledComponents';
+import { getChatsForUser } from '../../services/services';
 
 export const ChatCard: React.FC<{
   selectChat: (chatName: string) => void;
@@ -21,7 +21,7 @@ export const ChatCard: React.FC<{
     if (chat._id) {
       deleteChat(chat._id);
     }
-    dispatch(getAllChatsForUser(chat.supplier));
+    dispatch(getChatsForUser(chat.supplier));
   };
 
   return (

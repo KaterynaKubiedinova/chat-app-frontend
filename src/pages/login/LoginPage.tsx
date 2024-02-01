@@ -15,11 +15,11 @@ import {
   Error,
   LoginFormControl
 } from '../../themes/styledComponents';
-import { loginUser } from '../../store/auth';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { EMAIL_PATTERN } from '../../config/validationPatterns';
 import { LoginForm, LoginPageBlock } from './styledComponents';
+import { postAuthUser } from '../../services/services';
 
 type FormInput = {
   email: string;
@@ -44,12 +44,12 @@ export default function LoginPage() {
   const chatName = location.state?.chatName || null;
 
   const onSubmit: SubmitHandler<FormInput> = (data) => {
-    dispatch(loginUser(data))
+    dispatch(postAuthUser(data))
       .then((data) => {
         if (data) {
           chatName
-            ? navigate(`/chat/${data.user.id}/${chatName}`)
-            : navigate(`/chat/${data.user.id}`);
+            ? navigate(`/chat/${data.payload.id}/${chatName}`)
+            : navigate(`/chat/${data.payload.id}`);
         }
       })
       .catch((e) => {

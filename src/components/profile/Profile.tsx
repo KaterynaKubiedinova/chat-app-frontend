@@ -2,7 +2,6 @@ import { Button } from '@mui/material';
 import React from 'react';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { useNavigate } from 'react-router-dom';
-import { logoutUser } from '../../store/auth';
 import { User } from '../../types/userTypes';
 import { Socket } from 'socket.io-client';
 import { SocketEndPoints } from '../../config/apiController.constants';
@@ -12,6 +11,7 @@ import {
   ProfileDataBlock,
   ProfileEmail
 } from './styledComponents';
+import { getLogoutUser } from '../../services/services';
 
 const ProfileComponent: React.FC<{
   user: User | null;
@@ -21,7 +21,7 @@ const ProfileComponent: React.FC<{
   const navigate = useNavigate();
 
   const logOut = () => {
-    dispatch(logoutUser());
+    dispatch(getLogoutUser());
     navigate('/login');
     socket.emit(SocketEndPoints.DISCONNECT_USER, user?.email);
   };

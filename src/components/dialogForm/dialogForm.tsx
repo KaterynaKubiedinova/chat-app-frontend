@@ -8,12 +8,12 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useAppDispatch } from '../../hooks/store-hooks';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { User } from '../../types/userTypes';
-import { createNewChat } from '../../store/chats';
 import { CreateNewChatBtn } from '../../themes/styledComponents';
 import { EMAIL_PATTERN } from '../../config/validationPatterns';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 import { SocketEndPoints } from '../../config/apiController.constants';
+import { createNewChat } from '../../services/services';
 
 type FormInput = {
   consumer: string;

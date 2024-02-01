@@ -6,7 +6,8 @@ export enum ApiController {
   CREATE_CHAT = 'createChat',
   ALL_USER_CHATS = 'allUserChats',
   CURRENT_USER_CHAT = 'currentUserChat',
-  DELETE_CHAT_BY_ID = 'deleteChatById'
+  DELETE_CHAT_BY_ID = 'deleteChatById',
+  FETCH_USER = 'fetchUser'
 }
 
 export enum SocketEndPoints {
